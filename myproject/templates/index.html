@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutritional Coach Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b3e0ff; /* Color de fondo azul cielo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #chat-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            max-width: 90%;
+            height: 600px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            clear: both;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+            text-align: right;
+            color: #0066ff; /* Azul */
+        }
+
+        .bot-message {
+            justify-content: flex-start;
+            text-align: left;
+            color: #009933; /* Verde */
+        }
+
+        .message-content {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-message .message-content {
+            background-color: #0066ff; /* Azul */
+            color: #fff;
+        }
+
+        .bot-message .message-content {
+            background-color: #009933; /* Verde */
+            color: #fff;
+        }
+
+        /* Estilo para el formulario de entrada del usuario */
+        #user-input-form {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        #submit-button {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            background-image: url('send-icon.png'); /* Imagen de papel de envío */
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 70%;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        #submit-button:hover {
+            transform: scale(1.1); /* Efecto de escala al hacer hover */
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <form id="user-input-form">
+            <input type="text" id="user-input" name="user_input" placeholder="Type your message here...">
+            <button type="submit" id="submit-button"></button>
+        </form>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const userInputForm = document.getElementById('user-input-form');
+        const userInputField = document.getElementById('user-input');
+
+        // Función para enviar mensaje del usuario y recibir respuesta del chatbot
+        const sendMessage = async (message) => {
+            const response = await fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    user_input: message
+                })
+            });
+
+            const responseData = await response.json();
+            return responseData.bot_response;
+        };
+
+        // Función para mostrar mensaje del usuario y respuesta del chatbot en el chat-box
+        const displayMessage = async (message) => {
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.innerHTML = `
+                <img class="message-content user-message-content" src="{{ url_for('static', filename='user.png') }}" alt="User">
+                <span>${message}</span>
+            `;
+            chatBox.appendChild(userMessage);
+
+            const botResponse = await sendMessage(message);
+
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message bot-message';
+            botMessage.innerHTML = `
+                <img class="message-content bot-message-content" src="{{ url_for('static', filename='chatbot.png') }}" alt="Chatbot">
+                <span>${botResponse}</span>
+            `;
+            chatBox.appendChild(botMessage);
+
+            // Scroll hasta el final del chat
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        // Manejar el envío del formulario
+        userInputForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const userMessage = userInputField.value.trim();
+            if (userMessage !== '') {
+                displayMessage(userMessage);
+                userInputField.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
